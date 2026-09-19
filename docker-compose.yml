@@ -1,0 +1,25 @@
+services:
+  merge-api:
+    build: .
+    image: json-merge-api:latest
+    container_name: json-merge-api
+    ports:
+      - "${MERGE_PORT:-8000}:8000"
+    environment:
+      # 容器内数据库文件路径（挂载到命名卷持久化）
+      MERGE_DB_PATH: /data/merge.db
+      MERGE_HOST: 0.0.0.0
+      MERGE_PORT: "8000"
+      MERGE_BUSY_TIMEOUT_MS: "5000"
+    volumes:
+      - merge-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  merge-data:
